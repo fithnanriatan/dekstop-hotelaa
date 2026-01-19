@@ -1,17 +1,37 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package controller;
 
+import config.Koneksi;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import main.App;
 import model.Tamu;
 import view.TamuView;
 
+/**
+ *
+ * @author NATA
+ */
 public class TamuController {
 
     private final TamuView tamuView;
+    private Tamu t;
+    private Koneksi koneksi;
 
     public TamuController(TamuView tamuView) {
         this.tamuView = tamuView;
+        koneksi = new Koneksi();
+        t = new Tamu(koneksi.getConnection());
+    }
+
+    public Tamu getTamu() {
+        return t;
     }
 
     public void clearForm() {
@@ -33,7 +53,14 @@ public class TamuController {
     }
 
     private boolean isTamuIdExists(String kId) {
-        return App.masterService.isTamuExists(kId);
+        try {
+            Tamu temp = new Tamu(koneksi.getConnection());
+            Tamu result = temp.getById(kId);
+            return result.getIdTamu() != null && !result.getIdTamu().isEmpty();
+        } catch (SQLException ex) {
+            Logger.getLogger(TamuController.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
     }
 
     public boolean validasiInputBaru() {
@@ -61,7 +88,6 @@ public class TamuController {
         }
 
         return true;
-
     }
 
     public boolean validasiInput() {
@@ -83,7 +109,6 @@ public class TamuController {
         }
 
         return true;
-
     }
 
     public void loadData(Tamu tamu, List<Tamu> list) {
@@ -98,9 +123,6 @@ public class TamuController {
             tamuView.getTextNama().setEnabled(true);
             tamuView.getTextAlamat().setEnabled(true);
             tamuView.getTextTelp().setEnabled(true);
-        } else {
-
         }
     }
-
 }

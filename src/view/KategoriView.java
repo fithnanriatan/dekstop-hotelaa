@@ -5,9 +5,13 @@
  */
 package view;
 
+import config.Koneksi;
 import controller.KategoriController;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -26,10 +30,13 @@ public class KategoriView extends javax.swing.JInternalFrame {
     private final Kategori kategori;
     private List<Kategori> listKategori;
     private KategoriController kategoriController;
+    private Koneksi koneksi;
 
     public KategoriView() {
         initComponents();
-        kategori = new Kategori();
+        koneksi = new Koneksi();
+        kategori = new Kategori(koneksi.getConnection());
+
         kategoriController = new KategoriController(this);
         kategoriController.enableForm(false);
         refreshTable();
@@ -65,8 +72,14 @@ public class KategoriView extends javax.swing.JInternalFrame {
     }
 
     private void refreshTable() {
-        listKategori = App.masterService.getAllKategori();
-        tabelKategori.setModel(new KategoriTableModel(listKategori));
+        try {
+            Kategori k = new Kategori(koneksi.getConnection());
+            listKategori = k.getAll();
+            tabelKategori.setModel(new KategoriTableModel(listKategori));
+        } catch (SQLException ex) {
+            Logger.getLogger(KategoriView.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Gagal memuat data kategori!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void initListener() {
@@ -129,6 +142,7 @@ public class KategoriView extends javax.swing.JInternalFrame {
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_START);
 
+        jPanel4.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.LINE_AXIS));
 
         form.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), "Form", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 18))); // NOI18N
@@ -222,7 +236,7 @@ public class KategoriView extends javax.swing.JInternalFrame {
 
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
         // TODO add your handling code here:
-        App.menuView.kategoriView = null;
+        App.getMenuView().kategoriView = null;
     }//GEN-LAST:event_formInternalFrameClosed
 
     private void textIdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textIdActionPerformed
@@ -231,12 +245,16 @@ public class KategoriView extends javax.swing.JInternalFrame {
 
     private void tombolSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tombolSimpanActionPerformed
         if (kategoriController.validasiInputBaru()) {
-            kategori.setId(textId.getText());
-            kategori.setNama(textNama.getText());
-
-            App.masterService.simpanKategori(kategori);
-            JOptionPane.showMessageDialog(this, "Data berhasil disimpan !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-            refreshTable();
+            try {
+                kategori.setId(textId.getText());
+                kategori.setNama(textNama.getText());
+                kategori.simpan();
+                
+                JOptionPane.showMessageDialog(this, "Data berhasil disimpan !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                refreshTable();
+            } catch (SQLException ex) {
+                Logger.getLogger(KategoriView.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_tombolSimpanActionPerformed
 
@@ -250,12 +268,16 @@ public class KategoriView extends javax.swing.JInternalFrame {
     private void tombolUbahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tombolUbahActionPerformed
         // TODO add your handling code here:
         if (kategoriController.validasiInput()) {
-            kategori.setId(textId.getText());
-            kategori.setNama(textNama.getText());
-
-            App.masterService.ubahKategori(kategori);
-            JOptionPane.showMessageDialog(this, "Data berhasil diubah !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-            refreshTable();
+            try {
+                kategori.setId(textId.getText());
+                kategori.setNama(textNama.getText());
+                kategori.ubah();
+                
+                JOptionPane.showMessageDialog(this, "Data berhasil diubah !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                refreshTable();
+            } catch (SQLException ex) {
+                Logger.getLogger(KategoriView.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_tombolUbahActionPerformed
 
@@ -266,10 +288,15 @@ public class KategoriView extends javax.swing.JInternalFrame {
             kategori.setId(textId.getText());
             int konfirmasi = JOptionPane.showConfirmDialog(this, "Apakah anda yakin akan menghapus data ini?", "Konfirmasi", JOptionPane.WARNING_MESSAGE);
             if (konfirmasi == 0) {
-                App.masterService.hapusKategori(kategori);
-                JOptionPane.showMessageDialog(this, "Data berhasil dihapus !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-                refreshTable();
-                kategoriController.clearForm();;
+                try {
+                    kategori.hapus();
+                    JOptionPane.showMessageDialog(this, "Data berhasil dihapus !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                    refreshTable();
+                    kategoriController.clearForm();;
+                } catch (SQLException ex) {
+                    Logger.getLogger(KategoriView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
             }
 
         }

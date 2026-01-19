@@ -60,7 +60,7 @@
             <MenuItem class="javax.swing.JMenuItem" name="menuTrans">
               <Properties>
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
-                  <KeyStroke key="Shift+T"/>
+                  <KeyStroke key="Ctrl+X"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Transaksi"/>
               </Properties>
@@ -88,7 +88,7 @@
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
-    <Property name="title" type="java.lang.String" value="Hotel Sigma"/>
+    <Property name="title" type="java.lang.String" value="Hotelaa"/>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar1"/>

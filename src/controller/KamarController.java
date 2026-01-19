@@ -1,27 +1,43 @@
 package controller;
 
+import config.Koneksi;
+import java.sql.SQLException;
 import java.util.List;
-import javax.swing.ComboBoxModel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
-import main.App;
 import model.Kamar;
+import model.Kategori;
 import view.KamarView;
 
+/**
+ * @author NATA
+ */
 public class KamarController {
 
     private final KamarView kamarView;
+    private Kamar km;
+    private Kategori kat;
+    private Koneksi koneksi;
 
     public KamarController(KamarView kamarView) {
         this.kamarView = kamarView;
+        koneksi = new Koneksi();
+        km = new Kamar(koneksi.getConnection());
+        kat = new Kategori(koneksi.getConnection());
+    }
+
+    public Kamar getKamar() {
+        return km;
     }
 
     public void clearForm() {
         kamarView.getTextNo().setText(null);
         kamarView.getTextNama().setText(null);
-        kamarView.getComboKategori().setSelectedIndex(0); // Assuming the first index is a placeholder
+        kamarView.getComboKategori().setSelectedIndex(0);
         kamarView.getTextHarga().setText(null);
-        kamarView.getComboStatus().setSelectedIndex(0); // Assuming the first index is a placeholder
+        kamarView.getComboStatus().setSelectedIndex(0);
         kamarView.getTabelKamar().clearSelection();
     }
 
@@ -37,17 +53,40 @@ public class KamarController {
     }
 
     public void loadKategori() {
-        ComboBoxModel cbm = new DefaultComboBoxModel(App.masterService.getAllName());
-        kamarView.getComboKategori().setModel(cbm);
+        try {
+            Object[] kategoriArray = kat.getAllNama();
+
+            // Clear existing items
+            kamarView.getComboKategori().removeAllItems();
+
+            // Add placeholder
+            kamarView.getComboKategori().addItem("-- Pilih Kategori --");
+
+            // Add all kategori
+            for (Object kategori : kategoriArray) {
+                kamarView.getComboKategori().addItem(kategori.toString());
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(KamarController.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(kamarView, "Gagal memuat kategori: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private boolean isNoKamarExists(String kId) {
-        return App.masterService.isKamarExists(kId);
+        try {
+            Kamar temp = new Kamar(koneksi.getConnection());
+            Kamar result = temp.getById(kId);
+            return result.getNoKamar() != null && !result.getNoKamar().isEmpty();
+        } catch (SQLException ex) {
+            Logger.getLogger(KamarController.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
     }
 
     public boolean validasiInput() {
         if (kamarView.getTextNo().getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(kamarView, "NO Kamar harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(kamarView, "No Kamar harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         if (kamarView.getTextNama().getText().trim().isEmpty()) {
@@ -58,20 +97,37 @@ public class KamarController {
             JOptionPane.showMessageDialog(kamarView, "Harga harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        if (kamarView.getComboKategori().getSelectedIndex() == 0) { // Assuming the first index is a placeholder
+
+        // FIX: Validate kategori selection
+        if (kamarView.getComboKategori().getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(kamarView, "Silakan pilih kategori!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
-        if (kamarView.getComboStatus().getSelectedIndex() == 0) { // Assuming the first index is a placeholder
+
+        // FIX: Validate status selection
+        if (kamarView.getComboStatus().getSelectedIndex() == 0) {
             JOptionPane.showMessageDialog(kamarView, "Silakan pilih status!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
+
+        // Validate harga is a valid number
+        try {
+            double harga = Double.parseDouble(kamarView.getTextHarga().getText().trim());
+            if (harga <= 0) {
+                JOptionPane.showMessageDialog(kamarView, "Harga harus lebih dari 0!", "Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(kamarView, "Harga harus berupa angka!", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
         return true;
     }
 
     public boolean validasiInputBaru() {
         if (!validasiInput()) {
-            return false; // If any validation fails, return false
+            return false;
         }
         String noK = kamarView.getTextNo().getText().trim();
         if (isNoKamarExists(noK)) {
@@ -87,9 +143,19 @@ public class KamarController {
             kamar = list.get(row);
             kamarView.getTextNo().setText(kamar.getNoKamar());
             kamarView.getTextNama().setText(kamar.getNama());
-            kamarView.getComboKategori().setSelectedItem(kamar.getKategori().getNama());
+
+            // FIX: Handle kategori selection with null check
+            if (kamar.getKategori() != null) {
+                kamarView.getComboKategori().setSelectedItem(kamar.getKategori().getNama());
+            }
+            else {
+                kamarView.getComboKategori().setSelectedIndex(0);
+            }
+
             kamarView.getTextHarga().setText(String.valueOf(kamar.getHarga()));
             kamarView.getComboStatus().setSelectedItem(kamar.getStatus());
+
+            // Disable only noKamar field, enable others for editing
             kamarView.getTextNo().setEnabled(false);
             enableForm(false);
             kamarView.getTextNama().setEnabled(true);

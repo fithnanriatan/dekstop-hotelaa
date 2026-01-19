@@ -1,17 +1,37 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package controller;
 
+import config.Koneksi;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import main.App;
 import model.Kategori;
 import view.KategoriView;
 
+/**
+ *
+ * @author NATA
+ */
 public class KategoriController {
 
     private KategoriView kategoriView;
+    private Kategori k;
+    private Koneksi koneksi;
 
     public KategoriController(KategoriView kategoriView) {
         this.kategoriView = kategoriView;
+        koneksi = new Koneksi();
+        k = new Kategori(koneksi.getConnection());
+    }
+
+    public Kategori getKategori() {
+        return k;
     }
 
     public void clearForm() {
@@ -29,7 +49,14 @@ public class KategoriController {
     }
 
     private boolean isKategoriIdExists(String kId) {
-        return App.masterService.isKategoriExists(kId);
+        try {
+            Kategori temp = new Kategori(koneksi.getConnection());
+            Kategori result = temp.getById(kId);
+            return result.getId() != null && !result.getId().isEmpty();
+        } catch (SQLException ex) {
+            Logger.getLogger(KategoriController.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
     }
 
     public boolean validasiInputBaru() {
@@ -49,7 +76,6 @@ public class KategoriController {
             return false;
         }
         return true;
-
     }
 
     public boolean validasiInput() {
@@ -64,7 +90,6 @@ public class KategoriController {
         }
 
         return true;
-
     }
 
     public void loadData(Kategori kategori, List<Kategori> list) {
@@ -75,8 +100,6 @@ public class KategoriController {
             kategoriView.getTextNama().setText(kategori.getNama());
             enableForm(false);
             kategoriView.getTextNama().setEnabled(true);
-        } else {
-
         }
     }
 }

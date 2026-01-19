@@ -5,9 +5,13 @@
  */
 package view;
 
+import config.Koneksi;
 import controller.TamuController;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
@@ -24,10 +28,13 @@ public class TamuView extends javax.swing.JInternalFrame {
     private final Tamu tamu;
     private List<Tamu> listTamu;
     private final TamuController TamuController;
+    private Koneksi koneksi;
 
     public TamuView() {
         initComponents();
-        tamu = new Tamu();
+        koneksi = new Koneksi();
+        tamu = new Tamu(koneksi.getConnection());
+
         TamuController = new TamuController(this);
         TamuController.enableForm(false);
         refreshTable();
@@ -71,8 +78,14 @@ public class TamuView extends javax.swing.JInternalFrame {
     }
 
     private void refreshTable() {
-        listTamu = App.masterService.getAllTamu();
-        tabelTamu.setModel(new TamuTableModel(listTamu));
+        try {
+            Tamu t = new Tamu(koneksi.getConnection());
+            listTamu = t.getAll();
+            tabelTamu.setModel(new TamuTableModel(listTamu));
+        } catch (SQLException ex) {
+            Logger.getLogger(TamuView.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Gagal memuat data tamu!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void initListener() {
@@ -126,6 +139,8 @@ public class TamuView extends javax.swing.JInternalFrame {
             public void internalFrameOpened(javax.swing.event.InternalFrameEvent evt) {
             }
         });
+
+        pJudul.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 20, 20));
 
         judul.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
         judul.setText("DATA TAMU");
@@ -194,6 +209,8 @@ public class TamuView extends javax.swing.JInternalFrame {
 
         jPanel1.add(form);
 
+        tabel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 20));
+
         tabelTamu.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -222,10 +239,14 @@ public class TamuView extends javax.swing.JInternalFrame {
             tamu.setIdTamu(textNo.getText());
             int konfirmasi = JOptionPane.showConfirmDialog(this, "Apakah anda yakin akan menghapus data ini?", "Konfirmasi", JOptionPane.WARNING_MESSAGE);
             if (konfirmasi == 0) {
-                App.masterService.hapusTamu(tamu);
-                JOptionPane.showMessageDialog(this, "Data berhasil dihapus !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-                refreshTable();
-                TamuController.clearForm();
+                try {
+                    tamu.hapus();
+                    JOptionPane.showMessageDialog(this, "Data berhasil dihapus !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                    refreshTable();
+                    TamuController.clearForm();
+                } catch (SQLException ex) {
+                    Logger.getLogger(TamuView.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
 
         }
@@ -234,20 +255,24 @@ public class TamuView extends javax.swing.JInternalFrame {
     private void tombolSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tombolSimpanActionPerformed
         // TODO add your handling code here:
         if (TamuController.validasiInputBaru()) {
-            tamu.setIdTamu(textNo.getText());
-            tamu.setNama(textNama.getText());
-            tamu.setAlamat(textAlamat.getText());
-            tamu.setNoTelepon(textTelp.getText());
-
-            App.masterService.simpanTamu(tamu);
-            JOptionPane.showMessageDialog(this, "Data berhasil disimpan !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-            refreshTable();
+            try {
+                tamu.setIdTamu(textNo.getText());
+                tamu.setNama(textNama.getText());
+                tamu.setAlamat(textAlamat.getText());
+                tamu.setNoTelepon(textTelp.getText());
+                tamu.simpan();
+                
+                JOptionPane.showMessageDialog(this, "Data berhasil disimpan !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                refreshTable();
+            } catch (SQLException ex) {
+                Logger.getLogger(TamuView.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_tombolSimpanActionPerformed
 
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
         // TODO add your handling code here:
-        App.menuView.tamuView = null;
+        App.getMenuView().tamuView = null;
     }//GEN-LAST:event_formInternalFrameClosed
 
     private void tombolBaruActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tombolBaruActionPerformed
@@ -261,14 +286,18 @@ public class TamuView extends javax.swing.JInternalFrame {
     private void tombolUbahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tombolUbahActionPerformed
         // TODO add your handling code here:
         if (TamuController.validasiInput()) {
-            tamu.setIdTamu(textNo.getText());
-            tamu.setNama(textNama.getText());
-            tamu.setAlamat(textAlamat.getText());
-            tamu.setNoTelepon(textTelp.getText());
-
-            App.masterService.ubahTamu(tamu);
-            JOptionPane.showMessageDialog(this, "Tamu berhasil diubah !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-            refreshTable();
+            try {
+                tamu.setIdTamu(textNo.getText());
+                tamu.setNama(textNama.getText());
+                tamu.setAlamat(textAlamat.getText());
+                tamu.setNoTelepon(textTelp.getText());
+                tamu.ubah();
+                
+                JOptionPane.showMessageDialog(this, "Tamu berhasil diubah !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                refreshTable();
+            } catch (SQLException ex) {
+                Logger.getLogger(TamuView.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_tombolUbahActionPerformed
 

@@ -5,8 +5,6 @@
  */
 package main;
 
-import service.MasterService;
-import service.impl.MasterServiceImpl;
 import view.MenuView;
 
 /**
@@ -15,16 +13,16 @@ import view.MenuView;
  */
 public class App {
 
-    
-    public static MenuView menuView;
-    public static MasterService masterService;
+    private static MenuView menuView;
+
+    public static MenuView getMenuView() {
+        return menuView;
+    }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-
-        masterService = new MasterServiceImpl();
         menuView = new MenuView();
         menuView.setVisible(true);
     }

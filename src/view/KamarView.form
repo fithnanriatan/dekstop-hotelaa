@@ -51,7 +51,7 @@
       <Properties>
         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="1" left="20" right="20" top="1"/>
+            <EmptyBorder bottom="20" left="2" right="2" top="2"/>
           </Border>
         </Property>
       </Properties>
@@ -147,9 +147,10 @@
                 <Component class="javax.swing.JComboBox" name="comboStatus">
                   <Properties>
                     <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                      <StringArray count="2">
-                        <StringItem index="0" value="Tersedia"/>
-                        <StringItem index="1" value="DiSewa"/>
+                      <StringArray count="3">
+                        <StringItem index="0" value="-- Pilih Status --"/>
+                        <StringItem index="1" value="Tersedia"/>
+                        <StringItem index="2" value="DiSewa"/>
                       </StringArray>
                     </Property>
                   </Properties>

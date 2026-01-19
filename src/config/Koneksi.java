@@ -13,21 +13,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Koneksi {
-
     protected Connection connection;
     protected Statement stmt;
 
     public Koneksi() {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
 
             try {
-                // Untuk MySQL 8.x, tambahkan parameter timezone
-                connection = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/hotel?useSSL=false&serverTimezone=UTC",
-                        "root",
-                        ""
-                );
+                connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/dekstop_hotelaa", "root", "");
             } catch (SQLException ex) {
                 Logger.getLogger(Koneksi.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -36,7 +30,7 @@ public class Koneksi {
             Logger.getLogger(Koneksi.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    
     public Statement createStatement() throws SQLException {
         return stmt = connection.createStatement();
     }
@@ -44,5 +38,4 @@ public class Koneksi {
     public Connection getConnection() {
         return connection;
     }
-
 }

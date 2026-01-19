@@ -7,7 +7,9 @@ package view;
 
 import controller.TransaksiController;
 import com.toedter.calendar.JDateChooser;
+import config.Koneksi;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -45,13 +47,15 @@ public class TransaksiView extends javax.swing.JInternalFrame {
     private Tamu tamu;
     private List<Transaksi> listTransaksi;
     private final TransaksiController transaksiController;
+    private Koneksi koneksi;
 
     public TransaksiView() {
         initComponents();
 
-        transaksi = new Transaksi();
-        kamar = new Kamar();
-        tamu = new Tamu();
+        koneksi = new Koneksi();
+        transaksi = new Transaksi(koneksi.getConnection());
+        kamar = new Kamar(koneksi.getConnection());
+        tamu = new Tamu(koneksi.getConnection());
 
         transaksiController = new TransaksiController(this);
         transaksiController.enableForm(false);
@@ -217,8 +221,14 @@ public class TransaksiView extends javax.swing.JInternalFrame {
     }
 
     private void refreshTable() {
-        listTransaksi = App.masterService.getAllTransaksi();
-        tabelTrans.setModel(new TransTableModel(listTransaksi));
+        try {
+            Transaksi tr = new Transaksi(koneksi.getConnection());
+            listTransaksi = tr.getAll();
+            tabelTrans.setModel(new TransTableModel(listTransaksi));
+        } catch (SQLException ex) {
+            Logger.getLogger(TransaksiView.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Gagal memuat data transaksi!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void initListener() {
@@ -480,7 +490,7 @@ public class TransaksiView extends javax.swing.JInternalFrame {
 
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
         // TODO add your handling code here:
-        App.menuView.transaksiView = null;
+        App.getMenuView().transaksiView = null;
     }//GEN-LAST:event_formInternalFrameClosed
 
     private void tglKeluarPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_tglKeluarPropertyChange
@@ -498,12 +508,14 @@ public class TransaksiView extends javax.swing.JInternalFrame {
                         JOptionPane.showMessageDialog(this, "Tanggal Check Out tidak boleh sebelum Tanggal Check In!", "Error", JOptionPane.ERROR_MESSAGE);
                         getTglKeluar().setDate(null);
 
-                    } else if (t2.equals(t1)) {
+                    }
+                    else if (t2.equals(t1)) {
                         textTotBayar.setText("0");
                         JOptionPane.showMessageDialog(this, "Tanggal Check Out tidak boleh Sama dengan Tanggal Check In!", "Error", JOptionPane.ERROR_MESSAGE);
                         getTglKeluar().setDate(null);
 
-                    } else {
+                    }
+                    else {
 
                         Duration diff = Duration.between(t1.atStartOfDay(), t2.atStartOfDay());
                         long diffDays = diff.toDays();
@@ -525,9 +537,13 @@ public class TransaksiView extends javax.swing.JInternalFrame {
             transaksi.setIdTrans(textTransaksi.getText());
             int konfirmasi = JOptionPane.showConfirmDialog(this, "Apakah anda yakin akan menghapus data ini?", "Konfirmasi", JOptionPane.WARNING_MESSAGE);
             if (konfirmasi == 0) {
-                App.masterService.hapusTransaksi(transaksi);
-                JOptionPane.showMessageDialog(this, "Data berhasil dihapus !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-                refreshTable();
+                try {
+                    transaksi.hapus();
+                    JOptionPane.showMessageDialog(this, "Data berhasil dihapus !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                    refreshTable();
+                } catch (SQLException ex) {
+                    Logger.getLogger(TransaksiView.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
 
         }
@@ -536,19 +552,22 @@ public class TransaksiView extends javax.swing.JInternalFrame {
     private void tombolSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tombolSimpanActionPerformed
         // TODO add your handling code here:
         if (transaksiController.validasiInputBaru()) {
+            try {
+                transaksi.setIdTrans(textTransaksi.getText());
+                transaksi.setNoKamar(textNoKamar.getText());
+                transaksi.setIdTamu(textIdTamu.getText());
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                transaksi.setTglCheckin(sdf.format(tglMasuk.getDate()));
+                transaksi.setTglCheckout(sdf.format(tglKeluar.getDate()));
+                transaksi.setTotBayar(Double.parseDouble(textTotBayar.getText()));
+                transaksi.simpan();
 
-            transaksi.setIdTrans(textTransaksi.getText());
-            transaksi.setNoKamar(textNoKamar.getText());
-            transaksi.setIdTamu(textIdTamu.getText());
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            transaksi.setTglCheckin(sdf.format(tglMasuk.getDate()));
-            transaksi.setTglCheckout(sdf.format(tglKeluar.getDate()));
-            transaksi.setTotBayar(Double.parseDouble(textTotBayar.getText()));
-
-            App.masterService.simpanTransaksi(transaksi);
-            JOptionPane.showMessageDialog(this, "Data berhasil disimpan!", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-            refreshTable();
-            initListener();
+                JOptionPane.showMessageDialog(this, "Data berhasil disimpan!", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                refreshTable();
+                initListener();
+            } catch (SQLException ex) {
+                Logger.getLogger(TransaksiView.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }//GEN-LAST:event_tombolSimpanActionPerformed
 
@@ -610,7 +629,8 @@ public class TransaksiView extends javax.swing.JInternalFrame {
     public class TransTableModel extends AbstractTableModel {
 
         private List<Transaksi> listTransaksi = new ArrayList<>();
-        private final String HEADER[] = {"Id Transaksi", "Nama Kamar", "Nama Tamu", "Tanggal Check In", "Tanggal Check Out", "Total Bayar"};
+        private final String HEADER[] = {"Id Transaksi", "Nama Kamar", "Nama Tamu",
+            "Tanggal Check In", "Tanggal Check Out", "Total Bayar"};
 
         public TransTableModel(List<Transaksi> listTransaksi) {
             this.listTransaksi = listTransaksi;
@@ -638,20 +658,22 @@ public class TransaksiView extends javax.swing.JInternalFrame {
                 case 0:
                     return tr.getIdTrans();
                 case 1:
-                    return tr.getKamar().getNama();
+                    // FIX: Handle null Kamar
+                    return (tr.getKamar() != null) ? tr.getKamar().getNama() : "N/A";
                 case 2:
-                    return tr.getTamu().getNama();
+                    // FIX: Handle null Tamu
+                    return (tr.getTamu() != null) ? tr.getTamu().getNama() : "N/A";
                 case 3:
                     return tr.getTglCheckin();
                 case 4:
                     return tr.getTglCheckout();
                 case 5:
+                    // FIX KRITIS: Ganti getBayar() dengan getBayar() sesuai database
+                    // Karena di database kolom "bayar" menyimpan TOTAL BAYAR (totBayar)
                     return tr.getBayar();
                 default:
                     return null;
             }
         }
-
     }
-
 }

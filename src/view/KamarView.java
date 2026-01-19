@@ -5,11 +5,15 @@
  */
 package view;
 
+import config.Koneksi;
 import controller.KamarController;
 import static java.awt.Frame.MAXIMIZED_BOTH;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -37,6 +41,7 @@ public class KamarView extends javax.swing.JInternalFrame {
     private Kategori kategori;
     private List<Kamar> listKamar;
     private final KamarController kamarController;
+    private Koneksi koneksi;
 
     /**
      * Creates new form KamarView
@@ -44,8 +49,9 @@ public class KamarView extends javax.swing.JInternalFrame {
     public KamarView() {
         initComponents();
 
-        kamar = new Kamar();
-        kategori = new Kategori();
+        koneksi = new Koneksi();
+        kamar = new Kamar(koneksi.getConnection());
+        kategori = new Kategori(koneksi.getConnection());
 
         kamarController = new KamarController(this);
         kamarController.enableForm(false);
@@ -152,8 +158,14 @@ public class KamarView extends javax.swing.JInternalFrame {
     }
 
     private void refreshTable() {
-        listKamar = App.masterService.getAllKamar();
-        tabelKamar.setModel(new KamarTableModel(listKamar));
+        try {
+            Kamar km = new Kamar(koneksi.getConnection());
+            listKamar = km.getAll();
+            tabelKamar.setModel(new KamarTableModel(listKamar));
+        } catch (SQLException ex) {
+            Logger.getLogger(KamarView.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Gagal memuat data kamar!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void initListener() {
@@ -224,7 +236,7 @@ public class KamarView extends javax.swing.JInternalFrame {
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_START);
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 20, 1, 20));
+        jPanel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 20, 2));
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
 
         form.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), "Form", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 18))); // NOI18N
@@ -267,7 +279,7 @@ public class KamarView extends javax.swing.JInternalFrame {
         jLabel5.setText("Status");
         jPanel2.add(jLabel5);
 
-        comboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tersedia", "DiSewa" }));
+        comboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "-- Pilih Status --", "Tersedia", "DiSewa" }));
         jPanel2.add(comboStatus);
 
         tombolBaru.setText("Baru");
@@ -332,7 +344,7 @@ public class KamarView extends javax.swing.JInternalFrame {
 
     private void formInternalFrameClosed(javax.swing.event.InternalFrameEvent evt) {//GEN-FIRST:event_formInternalFrameClosed
         // TODO add your handling code here:
-        App.menuView.kamarView = null;
+        App.getMenuView().kamarView = null;
     }//GEN-LAST:event_formInternalFrameClosed
 
     private void tombolBaruActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tombolBaruActionPerformed
@@ -345,48 +357,88 @@ public class KamarView extends javax.swing.JInternalFrame {
     private void tombolSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tombolSimpanActionPerformed
         // TODO add your handling code here:
         if (kamarController.validasiInputBaru()) {
-            kategori = App.masterService.getByNameKategori(comboKategori.getSelectedItem().toString());
-            kamar.setNoKamar(textNo.getText());
-            kamar.setNama(textNama.getText());
-            kamar.setKategori(kategori);
-            kamar.setHarga(Double.parseDouble(textHarga.getText()));
-            kamar.setStatus(comboStatus.getSelectedItem().toString());
+            try {
+                Kategori kat = new Kategori(koneksi.getConnection());
+                kategori = kat.getByNama(comboKategori.getSelectedItem().toString());
 
-            App.masterService.simpanKamar(kamar);
+                kamar.setNoKamar(textNo.getText().trim());
+                kamar.setNama(textNama.getText().trim());
+                kamar.setKategori(kategori);
+                kamar.setHarga(Double.parseDouble(textHarga.getText().trim()));
+                kamar.setStatus(comboStatus.getSelectedItem().toString());
 
-            JOptionPane.showMessageDialog(this, "Data berhasil disimpan !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-            refreshTable();
+                kamar.simpan();
+
+                JOptionPane.showMessageDialog(this, "Data berhasil disimpan!", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                refreshTable();
+                kamarController.clearForm();
+                kamarController.enableForm(false);
+            } catch (SQLException ex) {
+                Logger.getLogger(KamarView.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, "Gagal menyimpan data: " + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Format harga tidak valid!",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
+
     }//GEN-LAST:event_tombolSimpanActionPerformed
 
     private void tombolHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tombolHapusActionPerformed
         // TODO add your handling code here:
         if (kamarController.validasiInput()) {
-            kamar.setNoKamar(textNo.getText());
-            int konfirmasi = JOptionPane.showConfirmDialog(this, "Apakah anda yakin akan menghapus data ini?", "Konfirmasi", JOptionPane.WARNING_MESSAGE);
-            if (konfirmasi == 0) {
-                App.masterService.hapusKamar(kamar);
-                JOptionPane.showMessageDialog(this, "Data berhasil dihapus !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-                refreshTable();
-                kamarController.clearForm();
-            }
+            kamar.setNoKamar(textNo.getText().trim());
+            int konfirmasi = JOptionPane.showConfirmDialog(this,
+                    "Apakah anda yakin akan menghapus data ini?",
+                    "Konfirmasi",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
 
+            if (konfirmasi == JOptionPane.YES_OPTION) {
+                try {
+                    kamar.hapus();
+                    JOptionPane.showMessageDialog(this, "Data berhasil dihapus!",
+                            "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                    refreshTable();
+                    kamarController.clearForm();
+                    kamarController.enableForm(false);
+                } catch (SQLException ex) {
+                    Logger.getLogger(KamarView.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showMessageDialog(this, "Gagal menghapus data: " + ex.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
         }
     }//GEN-LAST:event_tombolHapusActionPerformed
 
     private void tombolUbahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tombolUbahActionPerformed
         // TODO add your handling code here:
         if (kamarController.validasiInput()) {
-            kategori = App.masterService.getByNameKategori(comboKategori.getSelectedItem().toString());
-            kamar.setNoKamar(textNo.getText());
-            kamar.setNama(textNama.getText());
-            kamar.setKategori(kategori);
-            kamar.setHarga(Double.parseDouble(textHarga.getText()));
-            kamar.setStatus(comboStatus.getSelectedItem().toString());
+            try {
+                Kategori kat = new Kategori(koneksi.getConnection());
+                kategori = kat.getByNama(comboKategori.getSelectedItem().toString());
 
-            App.masterService.ubahKamar(kamar);
-            JOptionPane.showMessageDialog(this, "Data berhasil diubah !", "Informasi", JOptionPane.INFORMATION_MESSAGE);
-            refreshTable();
+                kamar.setNoKamar(textNo.getText().trim());
+                kamar.setNama(textNama.getText().trim());
+                kamar.setKategori(kategori);
+                kamar.setHarga(Double.parseDouble(textHarga.getText().trim()));
+                kamar.setStatus(comboStatus.getSelectedItem().toString());
+
+                kamar.ubah();
+
+                JOptionPane.showMessageDialog(this, "Data berhasil diubah!", "Informasi", JOptionPane.INFORMATION_MESSAGE);
+                refreshTable();
+                kamarController.clearForm();
+                kamarController.enableForm(false);
+            } catch (SQLException ex) {
+                Logger.getLogger(KamarView.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, "Gagal mengubah data: " + ex.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Format harga tidak valid!",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }//GEN-LAST:event_tombolUbahActionPerformed
 

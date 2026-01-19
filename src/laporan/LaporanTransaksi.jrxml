@@ -49,7 +49,7 @@ FROM
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="14" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Hotel Sigma]]></text>
+				<text><![CDATA[Hotelaa]]></text>
 			</staticText>
 		</band>
 	</pageHeader>

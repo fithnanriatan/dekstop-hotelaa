@@ -1,7 +1,11 @@
 package controller;
 
+import config.Koneksi;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import main.App;
 import model.Kamar;
@@ -13,6 +17,9 @@ import view.TamuDialog;
 import view.TamuView;
 import view.TransaksiView;
 
+/**
+ * @author NATA
+ */
 public class TransaksiController {
 
     private final TransaksiView transaksiView;
@@ -20,67 +27,82 @@ public class TransaksiController {
     private Kamar kamar;
     private List<Tamu> listTamu;
     private Tamu tamu;
+    private Koneksi koneksi;
 
     public TransaksiController(TransaksiView transaksiView) {
         this.transaksiView = transaksiView;
+        koneksi = new Koneksi();
     }
 
     public void cariKamar(String name) {
-        KamarDialog kamarDialog = new KamarDialog(App.menuView, true);
+        try {
+            KamarDialog kamarDialog = new KamarDialog(App.getMenuView(), true);
+            
+            Kamar km = new Kamar(koneksi.getConnection());
+            listKamar = km.cariKamar(name);
 
-        listKamar = App.masterService.findKamarByName(name);
-
-        if (listKamar == null || listKamar.isEmpty()) {
-            JOptionPane.showMessageDialog(kamarDialog, "Kamar tidak ditemukan.");
-            return;
-        }
-
-        KamarView kv = new KamarView();
-        KamarView.KamarTableModel kamarTabelModel = kv.new KamarTableModel(listKamar);
-
-        kamarDialog.getTabelCariKamar().setModel(kamarTabelModel);
-
-        kamarDialog.getTabelCariKamar().getSelectionModel().addListSelectionListener((lse) -> {
-
-            if (kamarDialog.getTabelCariKamar().getSelectedRow() >= 0) {
-                int row = kamarDialog.getTabelCariKamar().getSelectedRow();
-                kamar = listKamar.get(row);
-                transaksiView.getTextKamar().setText(kamar.getNama());
-                transaksiView.getTextBayar().setText(String.valueOf(kamar.getHarga()));
-                transaksiView.getTextNoKamar().setText(kamar.getNoKamar());
-
+            if (listKamar == null || listKamar.isEmpty()) {
+                JOptionPane.showMessageDialog(kamarDialog, "Kamar tidak ditemukan.");
+                return;
             }
-        });
 
-        kamarDialog.setVisible(true);
+            KamarView kv = new KamarView();
+            KamarView.KamarTableModel kamarTabelModel = kv.new KamarTableModel(listKamar);
+
+            kamarDialog.getTabelCariKamar().setModel(kamarTabelModel);
+
+            kamarDialog.getTabelCariKamar().getSelectionModel().addListSelectionListener((lse) -> {
+                if (kamarDialog.getTabelCariKamar().getSelectedRow() >= 0) {
+                    int row = kamarDialog.getTabelCariKamar().getSelectedRow();
+                    kamar = listKamar.get(row);
+                    transaksiView.getTextKamar().setText(kamar.getNama());
+                    transaksiView.getTextBayar().setText(String.valueOf(kamar.getHarga()));
+                    transaksiView.getTextNoKamar().setText(kamar.getNoKamar());
+                    kamarDialog.dispose(); // Close dialog after selection
+                }
+            });
+
+            kamarDialog.setVisible(true);
+        } catch (SQLException ex) {
+            Logger.getLogger(TransaksiController.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(transaksiView, "Gagal mencari kamar: " + ex.getMessage(), 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void cariTamu(String namaTamu) {
-        TamuDialog tamuDialog = new TamuDialog(App.menuView, true);
-
-        listTamu = App.masterService.getByNameTamu(namaTamu);
-        if (listTamu == null || listTamu.isEmpty()) {
-            JOptionPane.showMessageDialog(tamuDialog, "Tamu tidak ditemukan.");
-            return;
-        }
-
-        TamuView kv = new TamuView();
-        TamuView.TamuTableModel tamuTabelModel = kv.new TamuTableModel(listTamu);
-
-        tamuDialog.getTabelCariTamu().setModel(tamuTabelModel);
-
-        tamuDialog.getTabelCariTamu().getSelectionModel().addListSelectionListener((lse) -> {
-
-            if (tamuDialog.getTabelCariTamu().getSelectedRow() >= 0) {
-                int row = tamuDialog.getTabelCariTamu().getSelectedRow();
-                tamu = listTamu.get(row);
-                transaksiView.getTextTamu().setText(tamu.getNama());
-                transaksiView.getTextIdTamu().setText(tamu.getIdTamu());
-
+        try {
+            TamuDialog tamuDialog = new TamuDialog(App.getMenuView(), true);
+            
+            Tamu tm = new Tamu(koneksi.getConnection());
+            listTamu = tm.cariTamu(namaTamu);
+            
+            if (listTamu == null || listTamu.isEmpty()) {
+                JOptionPane.showMessageDialog(tamuDialog, "Tamu tidak ditemukan.");
+                return;
             }
-        });
 
-        tamuDialog.setVisible(true);
+            TamuView kv = new TamuView();
+            TamuView.TamuTableModel tamuTabelModel = kv.new TamuTableModel(listTamu);
+
+            tamuDialog.getTabelCariTamu().setModel(tamuTabelModel);
+
+            tamuDialog.getTabelCariTamu().getSelectionModel().addListSelectionListener((lse) -> {
+                if (tamuDialog.getTabelCariTamu().getSelectedRow() >= 0) {
+                    int row = tamuDialog.getTabelCariTamu().getSelectedRow();
+                    tamu = listTamu.get(row);
+                    transaksiView.getTextTamu().setText(tamu.getNama());
+                    transaksiView.getTextIdTamu().setText(tamu.getIdTamu());
+                    tamuDialog.dispose(); // Close dialog after selection
+                }
+            });
+
+            tamuDialog.setVisible(true);
+        } catch (SQLException ex) {
+            Logger.getLogger(TransaksiController.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(transaksiView, "Gagal mencari tamu: " + ex.getMessage(), 
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public boolean validasiInput() {
@@ -96,6 +118,7 @@ public class TransaksiController {
             JOptionPane.showMessageDialog(transaksiView, "ID harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
+        
         String transactionId = transaksiView.getTextTransaksi().getText().trim();
         if (isTransactionIdExists(transactionId)) {
             JOptionPane.showMessageDialog(transaksiView, "ID transaksi sudah ada!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -106,6 +129,7 @@ public class TransaksiController {
             JOptionPane.showMessageDialog(transaksiView, "Nomor Kamar harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
+        
         if (transaksiView.getTextIdTamu().getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(transaksiView, "ID Tamu harus diisi!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
@@ -120,11 +144,25 @@ public class TransaksiController {
             JOptionPane.showMessageDialog(transaksiView, "Tanggal Check-Out harus dipilih!", "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
+        
+        if (transaksiView.getTextTotBayar().getText().trim().isEmpty() || 
+            transaksiView.getTextTotBayar().getText().equals("0")) {
+            JOptionPane.showMessageDialog(transaksiView, "Total bayar harus lebih dari 0!", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        
         return true;
     }
 
     private boolean isTransactionIdExists(String trId) {
-        return App.masterService.isTransaksiExists(trId);
+        try {
+            Transaksi temp = new Transaksi(koneksi.getConnection());
+            Transaksi result = temp.getById(trId);
+            return result.getIdTrans() != null && !result.getIdTrans().isEmpty();
+        } catch (SQLException ex) {
+            Logger.getLogger(TransaksiController.class.getName()).log(Level.SEVERE, null, ex);
+            return false;
+        }
     }
 
     public void enableForm(boolean kondisi) {
@@ -145,6 +183,7 @@ public class TransaksiController {
             transaksi = list.get(row);
             transaksiView.getTextTransaksi().setText(transaksi.getIdTrans());
 
+            // Hide form fields when viewing existing transaction
             transaksiView.getNoKamar().setVisible(false);
             transaksiView.getKamarPanel().setVisible(false);
             transaksiView.getjLabel3().setVisible(false);
@@ -167,13 +206,11 @@ public class TransaksiController {
         transaksiView.getTextTamu().setText(null);
         transaksiView.getTextBayar().setText(null);
         transaksiView.getTextTotBayar().setText(null);
+        transaksiView.getTextNoKamar().setText(null);  // FIX: Clear hidden field
+        transaksiView.getTextIdTamu().setText(null);   // FIX: Clear hidden field
         transaksiView.getTglMasuk().setDate(null);
         transaksiView.getTglKeluar().setDate(null);
         transaksiView.getTabelTrans().clearSelection();
-    }
-
-    public void simpanTransaksi(Transaksi transaksi) {
-        App.masterService.simpanTransaksi(transaksi);
     }
 
     public void setKamar(Kamar kamar) {

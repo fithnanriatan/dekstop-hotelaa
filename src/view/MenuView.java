@@ -53,7 +53,7 @@ public class MenuView extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Hotel Sigma");
+        setTitle("Hotelaa");
 
         javax.swing.GroupLayout menuDesktopLayout = new javax.swing.GroupLayout(menuDesktop);
         menuDesktop.setLayout(menuDesktopLayout);
@@ -106,7 +106,7 @@ public class MenuView extends javax.swing.JFrame {
 
         jMenu2.setText("Transaksi");
 
-        menuTrans.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.SHIFT_MASK));
+        menuTrans.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_X, java.awt.event.InputEvent.CTRL_MASK));
         menuTrans.setText("Transaksi");
         menuTrans.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
