@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="null" language="groovy" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="a131f738-0631-4306-968e-df8189a2d33b">
+	<property name="ireport.zoom" value="2.1435888100000056"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+     transaksi.`idTrans` AS transaksi_idTrans,
+     transaksi.`tglCheckin` AS transaksi_tglCheckin,
+     transaksi.`tglCheckout` AS transaksi_tglCheckout,
+     transaksi.`bayar` AS transaksi_bayar,
+     tamu.`nama` AS tamu_nama,
+     kategorikamar.`nama` AS kategorikamar_nama,
+     kamar.`nama` AS kamar_nama,
+     kamar.`harga` AS kamar_harga,
+     kamar.`status` AS kamar_status
+FROM
+     `tamu` tamu INNER JOIN `transaksi` transaksi ON tamu.`idTamu` = transaksi.`idTamu`
+     INNER JOIN `kamar` kamar ON transaksi.`noKamar` = kamar.`noKamar`
+     INNER JOIN `kategorikamar` kategorikamar ON kamar.`idKategori` = kategorikamar.`idKategori`]]>
+	</queryString>
+	<field name="transaksi_idTrans" class="java.lang.Integer"/>
+	<field name="transaksi_tglCheckin" class="java.sql.Timestamp"/>
+	<field name="transaksi_tglCheckout" class="java.sql.Timestamp"/>
+	<field name="transaksi_bayar" class="java.lang.Double"/>
+	<field name="tamu_nama" class="java.lang.String"/>
+	<field name="kategorikamar_nama" class="java.lang.String"/>
+	<field name="kamar_nama" class="java.lang.String"/>
+	<field name="kamar_harga" class="java.lang.Double"/>
+	<field name="kamar_status" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="38" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="555" height="38" uuid="a9439589-796e-49f6-b9e4-45d5e22aed4b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Laporan Transaksi Pemesanan ]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="25" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="5" width="555" height="20" uuid="6b1faa56-8f16-4243-af33-2f9dd8fa6722"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Hotel Sigma]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="17" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="37" height="16" uuid="060e3fbb-e220-4c76-a4e9-0b5cd0ae1a1c"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="37" y="0" width="67" height="16" uuid="3a6d8901-3e7c-4e01-af19-25b0dc2f8206"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Tamu]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="104" y="0" width="80" height="16" uuid="b1d1925d-7b22-4211-a7a7-192bc8035dd1"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nama Kamar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="184" y="0" width="98" height="16" uuid="57b91e3b-9bf1-4c96-9b71-898963f2df72"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Harga]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="342" y="0" width="70" height="16" uuid="fae490e3-5f37-4df3-a8b9-b20d56536035"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Check In]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="412" y="0" width="76" height="16" uuid="c60d6a39-13fd-4164-80b4-523a8fa43830"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Check Out]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="488" y="0" width="67" height="16" uuid="f3f117c2-52d2-4730-b8ed-6b335687e657"/>
+				<box>
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Bayar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="282" y="0" width="60" height="16" uuid="85673509-7f8d-492e-817f-834073b33135"/>
+				<box leftPadding="3" rightPadding="1">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Kategori]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<textField>
+				<reportElement x="0" y="0" width="37" height="20" uuid="520b5111-9a8b-4f48-956d-f473a57b018f"/>
+				<box leftPadding="3" rightPadding="1">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{transaksi_idTrans}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="37" y="0" width="67" height="20" uuid="a2dcad88-7d18-49c6-bae7-0bea2bb6d33c"/>
+				<box leftPadding="3" rightPadding="1">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tamu_nama}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="104" y="0" width="80" height="20" uuid="414ac701-a189-4275-82ba-a7f66deb78f4"/>
+				<box leftPadding="3" rightPadding="1">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{kamar_nama}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="184" y="0" width="98" height="20" uuid="e25efa0c-3a50-4cfa-8e81-562dd1edd23d"/>
+				<box leftPadding="3" rightPadding="1">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{kamar_harga}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="342" y="0" width="70" height="20" uuid="e1aa7a0f-03f7-44c3-a041-edb232990fff"/>
+				<box leftPadding="3" rightPadding="1">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{transaksi_tglCheckin}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="412" y="0" width="76" height="20" uuid="b0226941-1ffe-4e41-9187-f5dd4a13724b"/>
+				<box leftPadding="3" rightPadding="1">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{transaksi_tglCheckout}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="488" y="0" width="67" height="20" uuid="33f5a2f8-b975-4cd3-9b73-8f3bcbe87735"/>
+				<box leftPadding="3" rightPadding="1">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{transaksi_bayar}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="282" y="0" width="60" height="20" uuid="6632044e-def1-4ecf-960b-f2ed08ea9eae"/>
+				<box leftPadding="3" rightPadding="1">
+					<pen lineWidth="1.0"/>
+					<topPen lineWidth="1.0"/>
+					<leftPen lineWidth="1.0"/>
+					<bottomPen lineWidth="1.0"/>
+					<rightPen lineWidth="1.0"/>
+				</box>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{kategorikamar_nama}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="45" splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="54" splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="42" splitType="Stretch"/>
+	</summary>
+</jasperReport>
